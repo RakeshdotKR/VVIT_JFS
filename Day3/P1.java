@@ -8,7 +8,7 @@ public class P1 {
             // 'throw' explicitly creates and raises an exception object
             throw new IllegalArgumentException("Age must be at least 18. Provided: " + age);
         }
-        System.out.println("Access granted. Age is valid.");
+        System.out.println("Access granted. Age is valid. The age is correct.");
     }
 
     public static void main(String[] args) {
