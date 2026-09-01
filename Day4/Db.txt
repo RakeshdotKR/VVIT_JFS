@@ -114,14 +114,14 @@ INSERT INTO departments (dept_id, dept_name, city) VALUES
 
 -- 2. Insert Employees (Managers first, then reports)
 INSERT INTO employees (emp_id, first_name, last_name, email, phone_number, hire_date, job_title, salary, dept_id, manager_id, status) VALUES
-(101, 'Aarav', 'Sharma', 'aarav.sharma@bharattech.com', '+91-9876543210', '2020-03-15', 'VP of Engineering', 220000.00, 10, NULL, 'Active'),
-(102, 'Priya', 'Nair', 'priya.nair@bharattech.com', '+91-9876543211', '2021-06-01', 'Lead Architect', 160000.00, 10, 101, 'Active'),
-(103, 'Rohan', 'Verma', 'rohan.verma@bharattech.com', '+91-9876543212', '2022-01-10', 'Senior Backend Developer', 110000.00, 10, 102, 'Active'),
-(104, 'Ananya', 'Deshmukh', 'ananya.d@bharattech.com', '+91-9876543213', '2022-08-20', 'Full Stack Developer', 85000.00, 10, 102, 'Active'),
-(105, 'Vikram', 'Iyer', 'vikram.iyer@bharattech.com', '+91-9876543214', '2021-04-12', 'Product Director', 180000.00, 20, NULL, 'Active'),
-(106, 'Neha', 'Patel', 'neha.patel@bharattech.com', '+91-9876543215', '2023-02-01', 'Product Manager', 95000.00, 20, 105, 'Active'),
-(107, 'Karan', 'Mehta', 'karan.mehta@bharattech.com', '+91-9876543216', '2021-11-15', 'DevOps Specialist', 90000.00, 30, 101, 'Active'),
-(108, 'Sneha', 'Reddy', 'sneha.reddy@bharattech.com', '+91-9876543217', '2023-05-10', 'HR Manager', 75000.00, 50, NULL, 'Active');
+(101, 'Aarav', 'Sharma', 'aarav.sharma@bharattech.com', '9876543210', '2020-03-15', 'VP of Engineering', 220000.00, 10, NULL, 'Active'),
+(102, 'Priya', 'Nair', 'priya.nair@bharattech.com', '9876543211', '2021-06-01', 'Lead Architect', 160000.00, 10, 101, 'Active'),
+(103, 'Rohan', 'Verma', 'rohan.verma@bharattech.com', '9876543212', '2022-01-10', 'Senior Backend Developer', 110000.00, 10, 102, 'Active'),
+(104, 'Ananya', 'Deshmukh', 'ananya.d@bharattech.com', '9876543213', '2022-08-20', 'Full Stack Developer', 85000.00, 10, 102, 'Active'),
+(105, 'Vikram', 'Iyer', 'vikram.iyer@bharattech.com', '9876543214', '2021-04-12', 'Product Director', 180000.00, 20, NULL, 'Active'),
+(106, 'Neha', 'Patel', 'neha.patel@bharattech.com', '9876543215', '2023-02-01', 'Product Manager', 95000.00, 20, 105, 'Active'),
+(107, 'Karan', 'Mehta', 'karan.mehta@bharattech.com', '9876543216', '2021-11-15', 'DevOps Specialist', 90000.00, 30, 101, 'Active'),
+(108, 'Sneha', 'Reddy', 'sneha.reddy@bharattech.com', '9876543217', '2023-05-10', 'HR Manager', 75000.00, 50, NULL, 'Active');
 
 -- 3. Insert Projects
 INSERT INTO projects (project_id, project_name, budget, start_date, end_date, dept_id) VALUES
