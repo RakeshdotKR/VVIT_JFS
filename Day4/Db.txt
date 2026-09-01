@@ -145,7 +145,7 @@ INSERT INTO employees (
     first_name, last_name, email, phone_number, 
     hire_date, job_title, salary, dept_id, manager_id, status
 ) VALUES (
-    'Aditi', 'Rao', 'aditi.rao@bharattech.com', '+91-9876543218',
+    'Aditi', 'Rao', 'aditi.rao@bharattech.com', '9876543218',
     '2024-01-15', 'Data Scientist', 125000.00, 10, 102, 'Active'
 );
 B. Multi-Row (Bulk) Insertion
@@ -195,7 +195,7 @@ INSERT INTO employees (
     first_name, last_name, email, phone_number, 
     hire_date, job_title, salary, dept_id, manager_id, status
 ) VALUES (
-    'Manish', 'Gupta', 'manish.temp@bharattech.com', '+91-9876543299',
+    'Manish', 'Gupta', 'manish.temp@bharattech.com', '9876543299',
     '2026-01-01', 'Contract Tester', 35000.00, 10, 103, 'Resigned'
 );
 
