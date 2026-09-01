@@ -137,3 +137,75 @@ INSERT INTO employee_projects (emp_id, project_id, assigned_role, assigned_date,
 (104, 502, 'UI/UX Developer', '2025-03-20', 10),
 (106, 502, 'Product Owner', '2025-03-15', 40),
 (107, 503, 'Cloud Architect', '2025-06-01', 40);
+
+1. INSERT Operations (Create)
+A. Single-Row Insertion with Explicit Columns
+Inserts a new employee reporting to Lead Architect Priya Nair (emp_id = 102).
+INSERT INTO employees (
+    first_name, last_name, email, phone_number, 
+    hire_date, job_title, salary, dept_id, manager_id, status
+) VALUES (
+    'Aditi', 'Rao', 'aditi.rao@bharattech.com', '+91-9876543218',
+    '2024-01-15', 'Data Scientist', 125000.00, 10, 102, 'Active'
+);
+B. Multi-Row (Bulk) Insertion
+Adds multiple departments in a single query execution.
+INSERT INTO departments (dept_name, city) VALUES
+('Cybersecurity & Compliance', 'Bengaluru'),
+('Legal & Corporate Affairs', 'Mumbai');
+________________________________________
+2. SELECT Operations (Read)
+A. Basic Projection with Calculated/Aliased Columns
+Computes annual CTC (Cost to Company) and a projected 10% appraisal for each engineer.
+SELECT 
+    emp_id AS 'Employee ID',
+    CONCAT(first_name, ' ', last_name) AS 'Full Name',
+    job_title AS 'Role',
+    salary AS 'Monthly Salary',
+    (salary * 12) AS 'Annual CTC (INR)',
+    ROUND(salary * 1.10, 2) AS 'Salary Post 10% Hike'
+FROM employees
+WHERE dept_id = 10;
+B. Eliminating Duplicates using DISTINCT
+Retrieves unique job roles currently held across all branches.
+SELECT DISTINCT job_title 
+FROM employees;
+________________________________________
+3. UPDATE Operations (Update)
+A. Single-Record Targeted Update
+Promotes an employee to a senior grade and updates their compensation.
+UPDATE employees
+SET 
+    job_title = 'Senior Full Stack Developer',
+    salary = 105000.00
+WHERE emp_id = 104;
+B. Conditional Multi-Row Update
+Gives an 8% annual inflation revision to all active employees working in department 10 (Engineering).
+UPDATE employees
+SET salary = ROUND(salary * 1.08, 2)
+WHERE dept_id = 10 AND status = 'Active';
+C. Safe Update Check
+Tip: In MySQL Workbench, SQL_SAFE_UPDATES = 1 prevents running UPDATE without a WHERE clause containing a key column. Always include a primary or unique key in the WHERE condition.
+________________________________________
+4. DELETE Operations (Delete)
+A. Conditional Record Deletion
+Inserts a temporary contractor record and subsequently removes it.
+-- Step 1: Insert temporary contractor
+INSERT INTO employees (
+    first_name, last_name, email, phone_number, 
+    hire_date, job_title, salary, dept_id, manager_id, status
+) VALUES (
+    'Manish', 'Gupta', 'manish.temp@bharattech.com', '+91-9876543299',
+    '2026-01-01', 'Contract Tester', 35000.00, 10, 103, 'Resigned'
+);
+
+-- Step 2: Delete by specific ID
+DELETE FROM employees 
+WHERE email = 'manish.temp@bharattech.com';
+B. DELETE vs TRUNCATE Comparison
+-- DELETE: Logs individual row removals, triggers foreign key cascades, rollback-safe
+DELETE FROM employee_projects 
+WHERE project_id = 503;
+
+-- TRUNCATE: DDL operation, resets AUTO_INCREMENT counters, faster, cannot be rolled back
+-- TRUNCATE TABLE employee_projects; -- (Uncomment only when complete reset is desired)
