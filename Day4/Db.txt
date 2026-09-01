@@ -1,0 +1,139 @@
+--DB
+Step 1: Create and Select the Database
+-- Create database with UTF-8 character encoding
+CREATE DATABASE IF NOT EXISTS BharatTech_DB
+CHARACTER SET utf8mb4 
+COLLATE utf8mb4_unicode_ci;
+
+-- Switch to the database
+USE BharatTech_DB;
+________________________________________
+Step 2: Create Tables with Keys & Constraints
+1. departments Table
+Stores corporate divisions across Indian tech hubs.
+CREATE TABLE departments (
+    dept_id INT AUTO_INCREMENT,
+    dept_name VARCHAR(50) NOT NULL,
+    city VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Constraints
+    CONSTRAINT pk_departments PRIMARY KEY (dept_id),
+    CONSTRAINT uq_dept_name UNIQUE (dept_name)
+);
+________________________________________
+2. employees Table
+Stores workforce records with validation checks, a foreign key referencing departments, and a self-referencing foreign key for hierarchy/managers.
+CREATE TABLE employees (
+    emp_id INT AUTO_INCREMENT,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone_number VARCHAR(15) NOT NULL,
+    hire_date DATE NOT NULL,
+    job_title VARCHAR(50) NOT NULL,
+    salary DECIMAL(10, 2) NOT NULL,
+    dept_id INT,
+    manager_id INT,
+    status ENUM('Active', 'On Leave', 'Resigned') DEFAULT 'Active',
+
+    -- Constraints
+    CONSTRAINT pk_employees PRIMARY KEY (emp_id),
+    CONSTRAINT uq_emp_email UNIQUE (email),
+    CONSTRAINT uq_emp_phone UNIQUE (phone_number),
+    CONSTRAINT chk_emp_salary CHECK (salary >= 25000.00), -- Minimum salary constraint
+    
+    -- Foreign Keys
+    CONSTRAINT fk_emp_department 
+        FOREIGN KEY (dept_id) REFERENCES departments(dept_id) 
+        ON DELETE SET NULL 
+        ON UPDATE CASCADE,
+        
+    CONSTRAINT fk_emp_manager 
+        FOREIGN KEY (manager_id) REFERENCES employees(emp_id) 
+        ON DELETE SET NULL 
+        ON UPDATE CASCADE
+);
+________________________________________
+3. projects Table
+Stores enterprise projects, assigned budgets in INR, and department associations.
+CREATE TABLE projects (
+    project_id INT AUTO_INCREMENT,
+    project_name VARCHAR(100) NOT NULL,
+    budget DECIMAL(12, 2) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    dept_id INT,
+
+    -- Constraints
+    CONSTRAINT pk_projects PRIMARY KEY (project_id),
+    CONSTRAINT uq_project_name UNIQUE (project_name),
+    CONSTRAINT chk_project_budget CHECK (budget > 0),
+    CONSTRAINT chk_project_timeline CHECK (end_date IS NULL OR end_date >= start_date),
+
+    -- Foreign Key
+    CONSTRAINT fk_project_department 
+        FOREIGN KEY (dept_id) REFERENCES departments(dept_id) 
+        ON DELETE RESTRICT 
+        ON UPDATE CASCADE
+);
+________________________________________
+4. employee_projects (Junction Table)
+Implements a many-to-many ($M:N$) mapping between employees and projects using a Composite Primary Key.
+CREATE TABLE employee_projects (
+    emp_id INT NOT NULL,
+    project_id INT NOT NULL,
+    assigned_role VARCHAR(50) DEFAULT 'Contributor',
+    assigned_date DATE NOT NULL,
+    hours_allocated INT DEFAULT 40,
+
+    -- Composite Primary Key (prevents assigning the same employee twice to the same project)
+    CONSTRAINT pk_emp_proj PRIMARY KEY (emp_id, project_id),
+    CONSTRAINT chk_hours CHECK (hours_allocated > 0 AND hours_allocated <= 60),
+
+    -- Foreign Keys
+    CONSTRAINT fk_ep_employee 
+        FOREIGN KEY (emp_id) REFERENCES employees(emp_id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_ep_project 
+        FOREIGN KEY (project_id) REFERENCES projects(project_id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
+);
+________________________________________
+Step 3: Seed Sample Initial Data
+-- 1. Insert Departments
+INSERT INTO departments (dept_id, dept_name, city) VALUES
+(10, 'Engineering & AI', 'Bengaluru'),
+(20, 'Product Management', 'Hyderabad'),
+(30, 'Cloud Infrastructure', 'Pune'),
+(40, 'Finance & Payroll', 'Mumbai'),
+(50, 'Human Resources', 'Delhi-NCR');
+
+-- 2. Insert Employees (Managers first, then reports)
+INSERT INTO employees (emp_id, first_name, last_name, email, phone_number, hire_date, job_title, salary, dept_id, manager_id, status) VALUES
+(101, 'Aarav', 'Sharma', 'aarav.sharma@bharattech.com', '+91-9876543210', '2020-03-15', 'VP of Engineering', 220000.00, 10, NULL, 'Active'),
+(102, 'Priya', 'Nair', 'priya.nair@bharattech.com', '+91-9876543211', '2021-06-01', 'Lead Architect', 160000.00, 10, 101, 'Active'),
+(103, 'Rohan', 'Verma', 'rohan.verma@bharattech.com', '+91-9876543212', '2022-01-10', 'Senior Backend Developer', 110000.00, 10, 102, 'Active'),
+(104, 'Ananya', 'Deshmukh', 'ananya.d@bharattech.com', '+91-9876543213', '2022-08-20', 'Full Stack Developer', 85000.00, 10, 102, 'Active'),
+(105, 'Vikram', 'Iyer', 'vikram.iyer@bharattech.com', '+91-9876543214', '2021-04-12', 'Product Director', 180000.00, 20, NULL, 'Active'),
+(106, 'Neha', 'Patel', 'neha.patel@bharattech.com', '+91-9876543215', '2023-02-01', 'Product Manager', 95000.00, 20, 105, 'Active'),
+(107, 'Karan', 'Mehta', 'karan.mehta@bharattech.com', '+91-9876543216', '2021-11-15', 'DevOps Specialist', 90000.00, 30, 101, 'Active'),
+(108, 'Sneha', 'Reddy', 'sneha.reddy@bharattech.com', '+91-9876543217', '2023-05-10', 'HR Manager', 75000.00, 50, NULL, 'Active');
+
+-- 3. Insert Projects
+INSERT INTO projects (project_id, project_name, budget, start_date, end_date, dept_id) VALUES
+(501, 'AI-Powered Search Engine', 5000000.00, '2025-01-01', '2026-12-31', 10),
+(502, 'NextGen Mobile Banking Portal', 3500000.00, '2025-03-15', '2026-09-30', 20),
+(503, 'Multi-Cloud Migration AWS-GCP', 2000000.00, '2025-06-01', NULL, 30);
+
+-- 4. Insert Employee Project Allocations (Junction Table)
+INSERT INTO employee_projects (emp_id, project_id, assigned_role, assigned_date, hours_allocated) VALUES
+(102, 501, 'Tech Lead', '2025-01-05', 40),
+(103, 501, 'Backend Engineer', '2025-01-10', 40),
+(104, 501, 'Full Stack Engineer', '2025-01-15', 30),
+(104, 502, 'UI/UX Developer', '2025-03-20', 10),
+(106, 502, 'Product Owner', '2025-03-15', 40),
+(107, 503, 'Cloud Architect', '2025-06-01', 40);
