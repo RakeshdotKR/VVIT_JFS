@@ -100,3 +100,79 @@ SELECT
 FROM employees
 ORDER BY salary DESC
 LIMIT 3 OFFSET 3; -- Equivalent to: LIMIT 3, 3 in MySQL
+
+
+GROUP BY & Aggregate Functions (COUNT, SUM, AVG, MIN, MAX, HAVING) applied to the BharatTech_DB schema.
+________________________________________
+1. Overall Company-Wide Aggregations
+Computes company-level workforce metrics across all active employees without grouping.
+SELECT 
+    COUNT(*) AS total_headcount,
+    COUNT(manager_id) AS total_managed_employees, -- Ignores NULL values
+    SUM(salary) AS total_monthly_payroll,
+    ROUND(AVG(salary), 2) AS company_average_salary,
+    MIN(salary) AS lowest_salary,
+    MAX(salary) AS highest_salary
+FROM employees
+WHERE status = 'Active';
+________________________________________
+2. Basic GROUP BY Aggregations
+A. Department-Wise Payroll & Headcount Analysis
+Groups employees by their department ID to calculate total expenditure and average compensation per division.
+SELECT 
+    dept_id,
+    COUNT(*) AS total_employees,
+    SUM(salary) AS dept_monthly_payroll,
+    ROUND(AVG(salary), 2) AS dept_average_salary,
+    MIN(salary) AS min_salary,
+    MAX(salary) AS max_salary
+FROM employees
+GROUP BY dept_id
+ORDER BY dept_monthly_payroll DESC;
+B. Project-Wise Resource & Effort Summary
+Aggregates total team members assigned and total weekly hours allocated per project from employee_projects.
+SELECT 
+    project_id,
+    COUNT(emp_id) AS assigned_developers,
+    SUM(hours_allocated) AS total_weekly_hours,
+    ROUND(AVG(hours_allocated), 1) AS avg_hours_per_person
+FROM employee_projects
+GROUP BY project_id;
+________________________________________
+3. Multi-Column GROUP BY
+Groups data by both Department and Job Title to identify headcount and compensation distribution across different job tiers.
+SELECT 
+    dept_id,
+    job_title,
+    COUNT(*) AS employee_count,
+    ROUND(AVG(salary), 2) AS avg_role_salary
+FROM employees
+GROUP BY dept_id, job_title
+ORDER BY dept_id ASC, avg_role_salary DESC;
+________________________________________
+4. Filtering Aggregated Groups using HAVING
+Key Rule:
+•	WHERE filters individual rows before aggregation takes place.
+•	HAVING filters summary groups after aggregation has occurred.
+A. Filter Departments with at least 2 Employees and High Average Pay
+Find departments that have 2 or more team members and an average monthly salary exceeding ₹1,00,000.
+SELECT 
+    dept_id,
+    COUNT(*) AS headcount,
+    ROUND(AVG(salary), 2) AS average_salary,
+    SUM(salary) AS total_cost
+FROM employees
+GROUP BY dept_id
+HAVING COUNT(*) >= 2 
+   AND AVG(salary) > 100000.00;
+B. Combining WHERE, GROUP BY, HAVING, and ORDER BY
+Find departments with active employees earning above ₹80,000, where the department's total payroll for such employees exceeds ₹1,50,000.
+SELECT 
+    dept_id,
+    COUNT(*) AS qualified_headcount,
+    SUM(salary) AS filtered_payroll
+FROM employees
+WHERE status = 'Active' AND salary >= 80000.00 -- Row-level filter
+GROUP BY dept_id                               -- Grouping
+HAVING SUM(salary) > 150000.00                 -- Aggregate-level filter
+ORDER BY filtered_payroll DESC;                -- Final sorting
