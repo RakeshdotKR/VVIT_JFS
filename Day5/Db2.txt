@@ -1,0 +1,102 @@
+Filtering & Sorting (WHERE, LIKE, IN, BETWEEN, ORDER BY, LIMIT) applied to the BharatTech_DB company schema.
+________________________________________
+1. Basic Filtering (WHERE with Logical AND, OR, NOT)
+Filter High-Earning Engineers
+Find active employees in the Engineering department (dept_id = 10) earning ₹1,00,000 or more per month.
+
+SELECT 
+    emp_id, 
+    CONCAT(first_name, ' ', last_name) AS full_name, 
+    job_title, 
+    salary
+FROM employees
+WHERE dept_id = 10 
+  AND salary >= 100000.00 
+  AND status = 'Active';
+________________________________________
+2. Range Filtering (BETWEEN)
+A. Numeric Salary Range
+Retrieve employees whose monthly salary falls inclusively between ₹80,000 and ₹1,50,000.
+SELECT 
+    first_name, 
+    last_name, 
+    job_title, 
+    salary
+FROM employees
+WHERE salary BETWEEN 80000.00 AND 150000.00;
+B. Date Range Filtering
+Find all team members onboarded during the calendar years 2021 and 2022.
+SELECT 
+    emp_id, 
+    CONCAT(first_name, ' ', last_name) AS employee_name, 
+    hire_date
+FROM employees
+WHERE hire_date BETWEEN '2021-01-01' AND '2022-12-31';
+________________________________________
+3. Set Membership Filtering (IN / NOT IN)
+Filter Specific Departments
+Retrieve employees belonging specifically to Engineering (10), Cloud Infrastructure (30), or Human Resources (50).
+SELECT 
+    emp_id, 
+    first_name, 
+    job_title, 
+    dept_id
+FROM employees
+WHERE dept_id IN (10, 30, 50);
+________________________________________
+4. Pattern Matching (LIKE with Wildcards % and _)
+•	% matches zero or more characters.
+•	_ matches exactly one character.
+A. Match Any Title Containing "Developer"
+SELECT 
+    emp_id, 
+    CONCAT(first_name, ' ', last_name) AS developer_name, 
+    job_title
+FROM employees
+WHERE job_title LIKE '%Developer%';
+B. Match Specific Starting and Ending Patterns
+Find all employees whose first name starts with the letter 'A' and ends with 'a' (e.g., Ananya).
+SELECT 
+    emp_id, 
+    first_name, 
+    email
+FROM employees
+WHERE first_name LIKE 'A%a';
+________________________________________
+5. Handling Missing Values (IS NULL / IS NOT NULL)
+Find Top-Level Leadership (No Direct Manager Assigned)
+SELECT 
+    emp_id, 
+    CONCAT(first_name, ' ', last_name) AS executive_name, 
+    job_title
+FROM employees
+WHERE manager_id IS NULL;
+________________________________________
+6. Sorting Results (ORDER BY ASC / DESC)
+Multi-Column Sorting
+Sort employees primarily by Department ID ascending, and secondarily by Salary descending (highest paid within each department first).
+SELECT 
+    dept_id, 
+    CONCAT(first_name, ' ', last_name) AS employee_name, 
+    salary
+FROM employees
+ORDER BY dept_id ASC, salary DESC;
+________________________________________
+7. Limiting & Pagination (LIMIT & OFFSET)
+A. Top 3 Highest Earners Across the Company
+SELECT 
+    emp_id, 
+    CONCAT(first_name, ' ', last_name) AS employee_name, 
+    job_title, 
+    salary
+FROM employees
+ORDER BY salary DESC
+LIMIT 3;
+B. Pagination (Page 2: Skipping First 3 Records, Fetching Next 3)
+SELECT 
+    emp_id, 
+    CONCAT(first_name, ' ', last_name) AS employee_name, 
+    salary
+FROM employees
+ORDER BY salary DESC
+LIMIT 3 OFFSET 3; -- Equivalent to: LIMIT 3, 3 in MySQL
