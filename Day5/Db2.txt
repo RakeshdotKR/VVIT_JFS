@@ -269,3 +269,111 @@ INNER JOIN projects p ON ep.project_id = p.project_id
 ORDER BY p.project_name ASC, ep.hours_allocated DESC;
 ________________________________________
 
+: Subqueries (Scalar, Multi-Row, Correlated, and EXISTS / NOT EXISTS) applied to the BharatTech_DB schema.
+________________________________________
+1. Scalar Subqueries (Returns Exactly 1 Row and 1 Column)
+A. Scalar Subquery in WHERE Clause
+Finds all employees who earn strictly more than the overall company average salary.
+SELECT 
+    emp_id,
+    CONCAT(first_name, ' ', last_name) AS employee_name,
+    job_title,
+    salary
+FROM employees
+WHERE salary > (
+    -- Inner Scalar Query: Evaluates to a single decimal value
+    SELECT AVG(salary) 
+    FROM employees
+)
+ORDER BY salary DESC;
+B. Scalar Subquery in SELECT Projection
+Displays each employee alongside the company's highest salary and their difference from the maximum.
+SELECT 
+    CONCAT(first_name, ' ', last_name) AS employee_name,
+    salary,
+    (SELECT MAX(salary) FROM employees) AS company_max_salary,
+    ROUND((SELECT MAX(salary) FROM employees) - salary, 2) AS gap_from_top
+FROM employees;
+________________________________________
+2. Multi-Row Subqueries (IN, ANY, ALL)
+A. Multi-Row Subquery with IN
+Finds employees working in departments situated in the tech hub of Bengaluru.
+SELECT 
+    emp_id,
+    CONCAT(first_name, ' ', last_name) AS employee_name,
+    job_title
+FROM employees
+WHERE dept_id IN (
+    -- Returns a list: (10, ...)
+    SELECT dept_id 
+    FROM departments 
+    WHERE city = 'Bengaluru'
+);
+B. Multi-Row Subquery with > ALL
+Finds employees whose salary is strictly greater than every employee's salary in the Product Management department (dept_id = 20).
+SELECT 
+    emp_id,
+    CONCAT(first_name, ' ', last_name) AS employee_name,
+    salary
+FROM employees
+WHERE salary > ALL (
+    SELECT salary 
+    FROM employees 
+    WHERE dept_id = 20
+);
+________________________________________
+3. Correlated Subqueries (Evaluated Row-by-Row)
+In a correlated subquery, the inner query references columns from the outer query (e.dept_id). It re-executes for every row processed by the outer query.
+Find Employees Earning Above Their Own Department's Average
+SELECT 
+    e.emp_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    e.job_title,
+    e.salary,
+    e.dept_id
+FROM employees e
+WHERE e.salary > (
+    -- Re-calculates average specifically for the outer row's department
+    SELECT AVG(sub.salary)
+    FROM employees sub
+    WHERE sub.dept_id = e.dept_id
+);
+________________________________________
+4. EXISTS & NOT EXISTS Operators
+EXISTS tests for the presence of matching records and terminates evaluation as soon as the first match is found (more performant than IN for large datasets).
+A. EXISTS: Find Departments That Have at Least One Project Assigned
+SELECT 
+    d.dept_id,
+    d.dept_name,
+    d.city
+FROM departments d
+WHERE EXISTS (
+    SELECT 1 
+    FROM projects p 
+    WHERE p.dept_id = d.dept_id
+);
+B. NOT EXISTS: Find Employees Not Allocated to Any Project
+Identifies unallocated/bench talent across the organization.
+SELECT 
+    e.emp_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS bench_employee,
+    e.job_title
+FROM employees e
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM employee_projects ep 
+    WHERE ep.emp_id = e.emp_id
+);
+________________________________________
+5. Subqueries in the FROM Clause (Derived Tables)
+Treats the result of an inner SELECT query as a temporary table (an alias is mandatory in MySQL).
+-- Calculate the average departmental payroll across the company
+SELECT 
+    ROUND(AVG(dept_summary.total_dept_payroll), 2) AS avg_payroll_across_depts
+FROM (
+    SELECT 
+        dept_id, 
+        SUM(salary) AS total_dept_payroll
+    FROM employees
+    GROUP BY dept_id
+) AS dept_summary;
