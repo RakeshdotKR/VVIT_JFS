@@ -176,3 +176,96 @@ WHERE status = 'Active' AND salary >= 80000.00 -- Row-level filter
 GROUP BY dept_id                               -- Grouping
 HAVING SUM(salary) > 150000.00                 -- Aggregate-level filter
 ORDER BY filtered_payroll DESC;                -- Final sorting
+
+________________________________________
+
+SQL Joins (INNER, LEFT, RIGHT, FULL OUTER, CROSS, and SELF JOIN) applied to the BharatTech_DB schema.
+________________________________________
+1. INNER JOIN (Matching Rows in Both Tables)
+Retrieves only employees who are assigned to a valid department along with the department's city.
+SELECT 
+    e.emp_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    e.job_title,
+    d.dept_name,
+    d.city AS office_location
+FROM employees e
+INNER JOIN departments d ON e.dept_id = d.dept_id;
+________________________________________
+2. LEFT JOIN (All Left Rows + Matching Right Rows)
+Lists all departments, including those with zero employees (e.g., Finance & Payroll), replacing missing counts with 0.
+SELECT 
+    d.dept_id,
+    d.dept_name,
+    d.city,
+    COUNT(e.emp_id) AS total_staff,
+    COALESCE(SUM(e.salary), 0.00) AS total_payroll
+FROM departments d
+LEFT JOIN employees e ON d.dept_id = e.dept_id
+GROUP BY d.dept_id, d.dept_name, d.city
+ORDER BY total_staff DESC;
+________________________________________
+3. RIGHT JOIN (All Right Rows + Matching Left Rows)
+Retrieves all departments from the right-hand table along with any matching employees.
+SELECT 
+    d.dept_name,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    e.job_title
+FROM employees e
+RIGHT JOIN departments d ON e.dept_id = d.dept_id;
+________________________________________
+4. FULL OUTER JOIN (All Rows from Both Tables)
+MySQL Note: MySQL does not have a native FULL OUTER JOIN keyword. It is achieved by combining a LEFT JOIN and a RIGHT JOIN with UNION.
+-- Combines all employees (even without departments) and all departments (even without employees)
+SELECT 
+    e.emp_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    d.dept_name,
+    d.city
+FROM employees e
+LEFT JOIN departments d ON e.dept_id = d.dept_id
+
+UNION
+
+SELECT 
+    e.emp_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    d.dept_name,
+    d.city
+FROM employees e
+RIGHT JOIN departments d ON e.dept_id = d.dept_id;
+________________________________________
+5. SELF JOIN (Joining a Table to Itself)
+Matches each employee with their respective Reporting Manager using the manager_id self-referential foreign key.
+SELECT 
+    e.emp_id AS 'Emp ID',
+    CONCAT(e.first_name, ' ', e.last_name) AS 'Employee Name',
+    e.job_title AS 'Role',
+    COALESCE(CONCAT(m.first_name, ' ', m.last_name), 'Top Executive / No Manager') AS 'Reporting Manager',
+    m.job_title AS 'Manager Role'
+FROM employees e
+LEFT JOIN employees m ON e.manager_id = m.emp_id;
+________________________________________
+6. CROSS JOIN (Cartesian Product: $M \times N$ Combinations)
+Generates every possible combination of employee and department location (useful for compliance audits or location matrix modeling).
+SELECT 
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    d.city AS audit_location
+FROM employees e
+CROSS JOIN departments d
+LIMIT 10; -- Restricted for sample display
+________________________________________
+7. Multi-Table Join ($M:N$ Many-to-Many Relationship)
+Joins three tables (employees, employee_projects, and projects) to produce a complete project allocation sheet.
+SELECT 
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    p.project_name,
+    ep.assigned_role,
+    ep.hours_allocated AS weekly_hours,
+    p.budget AS project_total_budget
+FROM employees e
+INNER JOIN employee_projects ep ON e.emp_id = ep.emp_id
+INNER JOIN projects p ON ep.project_id = p.project_id
+ORDER BY p.project_name ASC, ep.hours_allocated DESC;
+________________________________________
+
